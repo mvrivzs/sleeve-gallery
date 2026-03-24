@@ -67,23 +67,33 @@ export function initPlaceholders(covers) {
 
 // Fetch real artwork from Spotify oEmbed API, progressively upgrade images
 export async function fetchRealArtwork(covers) {
-  for (const cover of covers) {
-    if (!cover.spotifyId) continue;
-    try {
-      const url = `https://open.spotify.com/oembed?url=https://open.spotify.com/album/${cover.spotifyId}`;
-      const resp = await fetch(url);
-      if (!resp.ok) continue;
-      const data = await resp.json();
+  const BATCH_SIZE = 5;
+  const DELAY_BETWEEN = 300;
+  const DELAY_BETWEEN_BATCHES = 1500;
 
-      if (data.thumbnail_url) {
-        const artUrl = data.thumbnail_url.replace('ab67616d00001e02', 'ab67616d0000b273');
-        coverImages[cover.id] = artUrl;
-        updateVisibleImages(cover.id, artUrl);
+  for (let i = 0; i < covers.length; i += BATCH_SIZE) {
+    const batch = covers.slice(i, i + BATCH_SIZE);
+    await Promise.all(batch.map(async (cover) => {
+      if (!cover.spotifyId) return;
+      try {
+        const url = `https://open.spotify.com/oembed?url=https://open.spotify.com/album/${cover.spotifyId}`;
+        const resp = await fetch(url);
+        if (!resp.ok) return;
+        const data = await resp.json();
+
+        if (data.thumbnail_url) {
+          const artUrl = data.thumbnail_url.replace('ab67616d00001e02', 'ab67616d0000b273');
+          coverImages[cover.id] = artUrl;
+          updateVisibleImages(cover.id, artUrl);
+        }
+      } catch (e) {
+        console.warn(`Spotify artwork fetch failed for "${cover.title}":`, e.message);
       }
-    } catch (e) {
-      console.warn(`Spotify artwork fetch failed for "${cover.title}":`, e.message);
+    }));
+    // Pause between batches to avoid rate limiting
+    if (i + BATCH_SIZE < covers.length) {
+      await new Promise(r => setTimeout(r, DELAY_BETWEEN_BATCHES));
     }
-    await new Promise(r => setTimeout(r, 100));
   }
 }
 
