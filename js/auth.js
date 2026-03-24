@@ -108,13 +108,13 @@ async function fetchProfile(userId) {
     .from('profiles')
     .select('*')
     .eq('id', userId)
-    .single();
+    .limit(1);
 
   if (error) {
     console.warn('Failed to fetch profile:', error.message);
     return null;
   }
-  return data;
+  return data?.[0] || null;
 }
 
 // Sign in with Google
