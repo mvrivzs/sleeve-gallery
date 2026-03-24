@@ -71,6 +71,20 @@ export async function signInWithEmail(email, password) {
   if (error) throw error;
 }
 
+// Sign up with email/password + name
+export async function signUpWithEmail(email, password, firstName, lastName) {
+  const displayName = `${firstName} ${lastName}`.trim();
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { full_name: displayName }
+    }
+  });
+  if (error) throw error;
+  return data;
+}
+
 // Subscribe to auth state changes
 export function onAuthChange(callback) {
   authListeners.push(callback);

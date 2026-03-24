@@ -1,6 +1,6 @@
 // Main gallery module — rendering, filtering, vinyl animation, interactions
 import { loadCovers, submitCover, submitFlag } from './covers.js';
-import { initAuth, onAuthChange, getUser, getProfile, signInWithGoogle, signInWithSpotify, signInWithEmail, signOut, isCurator, setMockUser, getMockUserType } from './auth.js';
+import { initAuth, onAuthChange, getUser, getProfile, signInWithEmail, signUpWithEmail, signOut, isCurator, setMockUser, getMockUserType } from './auth.js';
 import { loadSavedCovers, toggleSave, isSaved } from './social.js';
 import { coverImages, initPlaceholders, fetchRealArtwork, extractSpotifyId, fetchSpotifyAlbum } from './utils.js';
 import { isSupabaseConfigured } from './supabase-config.js';
@@ -546,35 +546,64 @@ function initAuthUI() {
     if (e.target === e.currentTarget) authModal.classList.remove('open');
   });
 
-  // Email sign in
-  document.getElementById('emailSignIn')?.addEventListener('click', async () => {
+  // Auth mode toggle (sign in / sign up)
+  let isSignUpMode = false;
+  const authToggleBtn = document.getElementById('authToggleBtn');
+  const authToggleMsg = document.getElementById('authToggleMsg');
+  const signupFields = document.getElementById('signupFields');
+  const authTitle = document.getElementById('authModalTitle');
+  const authSubtitle = document.getElementById('authSubtitle');
+  const emailSignInBtn = document.getElementById('emailSignIn');
+
+  function setAuthMode(signUp) {
+    isSignUpMode = signUp;
+    signupFields.style.display = signUp ? '' : 'none';
+    emailSignInBtn.textContent = signUp ? 'Sign Up' : 'Sign In';
+    authTitle.textContent = signUp ? 'Sign Up' : 'Sign In';
+    authSubtitle.textContent = signUp
+      ? 'Create an account to submit covers, save favorites, and more.'
+      : 'Sign in to submit covers, save favorites, and connect with other collectors.';
+    authToggleMsg.textContent = signUp ? 'Already have an account?' : "Don't have an account?";
+    authToggleBtn.textContent = signUp ? 'Sign In' : 'Sign Up';
+    document.getElementById('authError').textContent = '';
+  }
+
+  authToggleBtn?.addEventListener('click', () => setAuthMode(!isSignUpMode));
+
+  // Email sign in / sign up
+  emailSignInBtn?.addEventListener('click', async () => {
     const email = document.getElementById('authEmail').value.trim();
     const password = document.getElementById('authPassword').value;
     const errorEl = document.getElementById('authError');
     errorEl.textContent = '';
-    if (!email || !password) { errorEl.textContent = 'Enter email and password.'; return; }
-    try {
-      await signInWithEmail(email, password);
-    } catch (e) {
-      errorEl.textContent = e.message;
+
+    if (isSignUpMode) {
+      const firstName = document.getElementById('authFirstName').value.trim();
+      const lastName = document.getElementById('authLastName').value.trim();
+      if (!firstName || !lastName) { errorEl.textContent = 'Enter your first and last name.'; return; }
+      if (!email || !password) { errorEl.textContent = 'Enter email and password.'; return; }
+      if (password.length < 6) { errorEl.textContent = 'Password must be at least 6 characters.'; return; }
+      try {
+        await signUpWithEmail(email, password, firstName, lastName);
+        errorEl.style.color = 'var(--text-muted)';
+        errorEl.textContent = 'Account created! You can now sign in.';
+        setTimeout(() => { setAuthMode(false); errorEl.style.color = ''; }, 2000);
+      } catch (e) {
+        errorEl.textContent = e.message;
+      }
+    } else {
+      if (!email || !password) { errorEl.textContent = 'Enter email and password.'; return; }
+      try {
+        await signInWithEmail(email, password);
+      } catch (e) {
+        errorEl.textContent = e.message;
+      }
     }
   });
 
-  // Enter key in password field triggers sign in
+  // Enter key in password field triggers action
   document.getElementById('authPassword')?.addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('emailSignIn')?.click();
-  });
-
-  // Google sign in
-  document.getElementById('googleSignIn')?.addEventListener('click', async () => {
-    if (!isSupabaseConfigured()) { setMockUser('standard'); return; }
-    try { await signInWithGoogle(); } catch (e) { console.error('Google sign-in failed:', e); }
-  });
-
-  // Spotify sign in
-  document.getElementById('spotifySignIn')?.addEventListener('click', async () => {
-    if (!isSupabaseConfigured()) { setMockUser('standard'); return; }
-    try { await signInWithSpotify(); } catch (e) { console.error('Spotify sign-in failed:', e); }
+    if (e.key === 'Enter') emailSignInBtn?.click();
   });
 
   // Sign out
