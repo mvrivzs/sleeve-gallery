@@ -67,18 +67,26 @@ export function initPlaceholders(covers) {
 
 // Fetch real artwork from Spotify oEmbed API, progressively upgrade images
 export async function fetchRealArtwork(covers) {
-  const BATCH_SIZE = 5;
-  const DELAY_BETWEEN = 300;
-  const DELAY_BETWEEN_BATCHES = 1500;
+  let delay = 400;
 
-  for (let i = 0; i < covers.length; i += BATCH_SIZE) {
-    const batch = covers.slice(i, i + BATCH_SIZE);
-    await Promise.all(batch.map(async (cover) => {
-      if (!cover.spotifyId) return;
+  for (const cover of covers) {
+    if (!cover.spotifyId) continue;
+    let retries = 2;
+
+    while (retries >= 0) {
       try {
         const url = `https://open.spotify.com/oembed?url=https://open.spotify.com/album/${cover.spotifyId}`;
         const resp = await fetch(url);
-        if (!resp.ok) return;
+
+        if (resp.status === 429) {
+          // Rate limited — back off significantly
+          delay = Math.min(delay * 2, 10000);
+          await new Promise(r => setTimeout(r, delay));
+          retries--;
+          continue;
+        }
+
+        if (!resp.ok) break;
         const data = await resp.json();
 
         if (data.thumbnail_url) {
@@ -86,14 +94,16 @@ export async function fetchRealArtwork(covers) {
           coverImages[cover.id] = artUrl;
           updateVisibleImages(cover.id, artUrl);
         }
+        // Successful — gradually reduce delay
+        delay = Math.max(delay * 0.9, 300);
+        break;
       } catch (e) {
         console.warn(`Spotify artwork fetch failed for "${cover.title}":`, e.message);
+        break;
       }
-    }));
-    // Pause between batches to avoid rate limiting
-    if (i + BATCH_SIZE < covers.length) {
-      await new Promise(r => setTimeout(r, DELAY_BETWEEN_BATCHES));
     }
+
+    await new Promise(r => setTimeout(r, delay));
   }
 }
 
