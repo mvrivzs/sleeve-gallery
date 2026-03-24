@@ -2,8 +2,8 @@
 // Replace these with your actual Supabase project values
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';   // e.g. https://xxxxx.supabase.co
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';  // The public anon key
+const SUPABASE_URL = 'https://baxqmkpwiidwvurafyqy.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_A-k-lozthlGbFkOIh9o2Ag__0LvqSx1';
 
 // Check if Supabase is configured (not placeholder values)
 export function isSupabaseConfigured() {
