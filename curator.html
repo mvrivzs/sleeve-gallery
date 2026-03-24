@@ -11,6 +11,34 @@
   max-width: 1100px;
   margin: 0 auto;
   padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 60px);
+}
+#curatorContent {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+.tab-content {
+  flex: 1;
+  min-height: 0;
+  display: none;
+}
+.tab-content.active {
+  display: flex;
+  flex-direction: column;
+}
+.table-scroll-wrap {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+/* Pending/flags grids also scroll */
+.pending-grid {
+  overflow-y: auto;
+  flex: 1;
 }
 
 /* Tabs */
@@ -51,8 +79,6 @@
 }
 .tab-badge:empty { display: none; }
 
-.tab-content { display: none; }
-.tab-content.active { display: block; }
 
 /* Search + filters */
 .curator-toolbar {
@@ -264,22 +290,24 @@
         <button class="table-btn" id="addCoverBtn" style="padding:0.6rem 1rem; font-size:0.8rem;">+ Add Cover</button>
       </div>
       <div class="cover-count" id="coverCount"></div>
-      <table class="cover-table">
-        <thead>
-          <tr>
-            <th></th>
-            <th>Title</th>
-            <th>Artist</th>
-            <th>Cover Artist</th>
-            <th>Year</th>
-            <th>Genre</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="coverTableBody"></tbody>
-      </table>
-      <div class="empty-state" id="allEmpty" style="display:none;">No covers found.</div>
+      <div class="table-scroll-wrap">
+        <table class="cover-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Title</th>
+              <th>Artist</th>
+              <th>Cover Artist</th>
+              <th>Year</th>
+              <th>Genre</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="coverTableBody"></tbody>
+        </table>
+        <div class="empty-state" id="allEmpty" style="display:none;">No covers found.</div>
+      </div>
     </div>
   </div>
 </div>
@@ -315,11 +343,27 @@
         <label>Cover Link</label>
         <a id="editCoverLink" href="#" target="_blank" style="font-size:0.8rem; color:var(--text-muted); word-break:break-all;"></a>
       </div>
-      <div class="edit-field"><label>Spotify Album ID</label><input type="text" id="editSpotifyId" placeholder="e.g. 4LH4d3cOWNNsVw41Gqt2kv"></div>
+      <div class="edit-field">
+        <label>Spotify Album ID or URL</label>
+        <div style="display:flex; gap:0.5rem;">
+          <input type="text" id="editSpotifyId" placeholder="e.g. 4LH4d3cOWNNsVw41Gqt2kv" style="flex:1;">
+          <button class="edit-save-btn" id="editFetchSpotifyBtn" style="white-space:nowrap; padding:0.6rem 1rem;">Fetch</button>
+        </div>
+        <div class="edit-spotify-status" id="editSpotifyStatus" style="font-size:0.75rem; color:var(--text-faint); margin-top:0.3rem;"></div>
+      </div>
+      <div class="edit-field" id="editPreviewSection" style="display:none;">
+        <div style="display:flex; align-items:center; gap:1rem; padding:0.6rem; background:var(--bg-alt); border:1px solid var(--border);">
+          <img id="editPreviewThumb" src="" alt="Album artwork" style="width:60px; height:60px; object-fit:cover;">
+          <div>
+            <div id="editPreviewTitle" style="font-weight:500;"></div>
+            <div id="editPreviewArtist" style="font-size:0.8rem; color:var(--text-muted);"></div>
+          </div>
+        </div>
+      </div>
       <div class="edit-field"><label>Title</label><input type="text" id="editTitle"></div>
       <div class="edit-field"><label>Musician</label><input type="text" id="editMusician"></div>
       <div class="edit-field"><label>Cover Artist</label><input type="text" id="editCoverArtist"></div>
-      <div class="edit-field"><label>Role</label><input type="text" id="editRole"></div>
+      <div class="edit-field"><label>Role</label><select id="editRole" style="width:100%; padding:0.6rem 0.8rem; border:1px solid var(--border); background:var(--surface); color:var(--text); font-family:'Helvetica Neue',Helvetica,Arial,sans-serif; font-size:0.85rem;"><option value="">Select role...</option><option value="Illustration">Illustration</option><option value="Art Direction">Art Direction</option><option value="Photography">Photography</option><option value="Mixed Media">Mixed Media</option></select></div>
       <div class="edit-field"><label>Year</label><input type="number" id="editYear"></div>
       <div class="edit-field"><label>Label</label><input type="text" id="editLabel"></div>
       <div class="edit-field"><label>Genre(s)</label><div class="genre-picker" id="editGenrePicker"></div></div>
@@ -625,6 +669,17 @@ function openEditModal(cover) {
   document.getElementById('editCoverLink').href = coverUrl;
   document.getElementById('editCoverLink').textContent = coverUrl;
   document.getElementById('editCoverLinkField').style.display = '';
+  document.getElementById('editSpotifyStatus').textContent = '';
+  // Show artwork preview if Spotify ID exists
+  const sid = cover.spotifyId || cover.spotify_id || '';
+  if (sid && artworkCache[sid]) {
+    document.getElementById('editPreviewSection').style.display = '';
+    document.getElementById('editPreviewThumb').src = artworkCache[sid];
+    document.getElementById('editPreviewTitle').textContent = cover.title || '';
+    document.getElementById('editPreviewArtist').textContent = cover.musician || '';
+  } else {
+    document.getElementById('editPreviewSection').style.display = 'none';
+  }
   document.getElementById('editOverlay').classList.add('open');
 }
 
@@ -645,6 +700,8 @@ function openAddModal() {
   document.getElementById('editSpotifyId').value = '';
   document.getElementById('editAmazonUrl').value = '';
   document.getElementById('editCoverLinkField').style.display = 'none';
+  document.getElementById('editPreviewSection').style.display = 'none';
+  document.getElementById('editSpotifyStatus').textContent = '';
   document.getElementById('editOverlay').classList.add('open');
 }
 
@@ -653,6 +710,39 @@ document.getElementById('closeEditModal').addEventListener('click', () => {
 });
 document.getElementById('editOverlay').addEventListener('click', e => {
   if (e.target === e.currentTarget) document.getElementById('editOverlay').classList.remove('open');
+});
+
+// Fetch Spotify data in edit modal
+document.getElementById('editFetchSpotifyBtn').addEventListener('click', async () => {
+  const input = document.getElementById('editSpotifyId').value.trim();
+  const statusEl = document.getElementById('editSpotifyStatus');
+  if (!input) { statusEl.textContent = 'Enter a Spotify album ID or URL.'; return; }
+
+  // Extract ID from URL if needed
+  const idMatch = input.match(/album[/:]([a-zA-Z0-9]+)/);
+  const spotifyId = idMatch ? idMatch[1] : input;
+  document.getElementById('editSpotifyId').value = spotifyId;
+
+  statusEl.textContent = 'Fetching...';
+  try {
+    const album = await fetchSpotifyAlbum(spotifyId);
+    statusEl.textContent = '';
+
+    // Show preview
+    document.getElementById('editPreviewSection').style.display = '';
+    document.getElementById('editPreviewThumb').src = album.thumbnailUrl || '';
+    document.getElementById('editPreviewTitle').textContent = album.title || '';
+    document.getElementById('editPreviewArtist').textContent = album.artist || '';
+
+    // Auto-fill fields if empty
+    if (!document.getElementById('editTitle').value) document.getElementById('editTitle').value = album.title || '';
+    if (!document.getElementById('editMusician').value) document.getElementById('editMusician').value = album.artist || '';
+    if (!document.getElementById('editYear').value && album.year) document.getElementById('editYear').value = album.year;
+    if (!document.getElementById('editLabel').value && album.label) document.getElementById('editLabel').value = album.label;
+  } catch (e) {
+    statusEl.textContent = 'Failed to fetch album. Check the ID.';
+    console.error('Spotify fetch failed:', e);
+  }
 });
 
 document.getElementById('editSaveBtn').addEventListener('click', async () => {

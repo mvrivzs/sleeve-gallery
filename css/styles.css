@@ -1104,20 +1104,20 @@ select.submit-input { appearance: none; cursor: pointer; }
     padding: 1rem;
     display: contents; /* Let children participate in parent flex */
   }
-  .center-col .section-label { order: 1; padding: 0 1.5rem; }
-  .center-col .featured-viewer { order: 2; margin: 0; margin-left: 1.5rem; }
-  .center-col .swipe-hint { order: 3; padding: 0 1.5rem; margin-bottom: 1.5rem; }
+  .center-col .section-label { order: 1; padding: 0 1rem; }
+  .center-col .featured-viewer { order: 2; margin: 0; margin-left: 1rem; }
+  .center-col .swipe-hint { order: 3; padding: 0 1rem; margin-bottom: 1.5rem; }
   .right-col {
     order: 4;
     position: static;
     height: auto;
     border-left: none;
     border-top: 1px solid var(--border);
-    padding: 1.2rem 1.5rem;
+    padding: 1.2rem 1rem;
   }
   .meta-block { margin-bottom: 0.8rem; }
   .credit-badges { margin-bottom: 0.5rem; }
-  #coverGrids { order: 5; padding: 0 1.5rem; }
+  #coverGrids { order: 5; padding: 0 1rem; }
   .featured-viewer { max-width: 260px; }
   .site-header { padding: 1rem; }
 
