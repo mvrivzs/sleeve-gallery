@@ -3,7 +3,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const SUPABASE_URL = 'https://baxqmkpwiidwvurafyqy.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_A-k-lozthlGbFkOIh9o2Ag__0LvqSx1';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheHFta3B3aWlkd3Z1cmFmeXF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjIxODksImV4cCI6MjA4OTkzODE4OX0.DA09rZbP8pfB5pCpNCevtuOTMKJ99REbF1Plnk5SnAQ';
 
 // Check if Supabase is configured (not placeholder values)
 export function isSupabaseConfigured() {
