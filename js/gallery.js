@@ -576,27 +576,38 @@ function initAuthUI() {
     const password = document.getElementById('authPassword').value;
     const errorEl = document.getElementById('authError');
     errorEl.textContent = '';
+    const originalText = emailSignInBtn.textContent;
+    emailSignInBtn.textContent = 'Loading...';
+    emailSignInBtn.disabled = true;
 
     if (isSignUpMode) {
       const firstName = document.getElementById('authFirstName').value.trim();
       const lastName = document.getElementById('authLastName').value.trim();
-      if (!firstName || !lastName) { errorEl.textContent = 'Enter your first and last name.'; return; }
-      if (!email || !password) { errorEl.textContent = 'Enter email and password.'; return; }
-      if (password.length < 6) { errorEl.textContent = 'Password must be at least 6 characters.'; return; }
+      if (!firstName || !lastName) { errorEl.textContent = 'Enter your first and last name.'; emailSignInBtn.textContent = originalText; emailSignInBtn.disabled = false; return; }
+      if (!email || !password) { errorEl.textContent = 'Enter email and password.'; emailSignInBtn.textContent = originalText; emailSignInBtn.disabled = false; return; }
+      if (password.length < 6) { errorEl.textContent = 'Password must be at least 6 characters.'; emailSignInBtn.textContent = originalText; emailSignInBtn.disabled = false; return; }
       try {
         await signUpWithEmail(email, password, firstName, lastName);
         errorEl.style.color = 'var(--text-muted)';
         errorEl.textContent = 'Account created! You can now sign in.';
+        emailSignInBtn.textContent = originalText;
+        emailSignInBtn.disabled = false;
         setTimeout(() => { setAuthMode(false); errorEl.style.color = ''; }, 2000);
       } catch (e) {
         errorEl.textContent = e.message;
+        emailSignInBtn.textContent = originalText;
+        emailSignInBtn.disabled = false;
       }
     } else {
-      if (!email || !password) { errorEl.textContent = 'Enter email and password.'; return; }
+      if (!email || !password) { errorEl.textContent = 'Enter email and password.'; emailSignInBtn.textContent = originalText; emailSignInBtn.disabled = false; return; }
       try {
         await signInWithEmail(email, password);
+        emailSignInBtn.textContent = originalText;
+        emailSignInBtn.disabled = false;
       } catch (e) {
         errorEl.textContent = e.message;
+        emailSignInBtn.textContent = originalText;
+        emailSignInBtn.disabled = false;
       }
     }
   });
@@ -628,13 +639,17 @@ function initAuthUI() {
 
   // Update UI on auth change
   onAuthChange((user, profile) => {
-    if (user && profile) {
+    if (user) {
       loginBtn.style.display = 'none';
       document.getElementById('userAvatarWrap').style.display = '';
       const avatarBtn = document.getElementById('userAvatar');
       const avatarImg = document.getElementById('userAvatarImg');
-      const initials = (profile.display_name || 'U')[0].toUpperCase();
-      if (profile.avatar_url) {
+      const displayName = profile?.display_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'U';
+      const nameParts = displayName.split(' ').filter(Boolean);
+      const initials = nameParts.length >= 2
+        ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
+        : nameParts[0][0].toUpperCase();
+      if (profile?.avatar_url) {
         avatarImg.src = profile.avatar_url;
         avatarImg.style.display = '';
         avatarBtn.textContent = '';
@@ -643,7 +658,7 @@ function initAuthUI() {
         avatarImg.style.display = 'none';
         avatarBtn.textContent = initials;
       }
-      document.getElementById('userDisplayName').textContent = profile.display_name || 'User';
+      document.getElementById('userDisplayName').textContent = displayName;
 
       // Show curator link if applicable
       const curatorLink = document.getElementById('curatorPanelLink');
