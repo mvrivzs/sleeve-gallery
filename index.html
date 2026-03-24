@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sleeve — A Curated Cover Art Gallery</title>
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+
+<a href="#main-content" class="skip-link" data-i18n="skipToMain">Skip to main content</a>
+
+<!-- HEADER -->
+<header class="site-header">
+  <a href="/" class="logo" style="text-decoration:none; color:inherit;">
+    <h1>SLEEVE</h1>
+    <span class="tagline" data-i18n="tagline">A curated cover art gallery</span>
+  </a>
+  <div class="header-actions">
+    <button class="submit-cover-btn" id="openSubmitModal" aria-label="Submit a cover" data-i18n="submitCover">Submit a Cover</button>
+    <button class="mobile-filter-btn sans" id="openFilters" aria-label="Open filters">
+      <span data-i18n="filters">Filters</span> <span class="filter-badge" id="filterBadge"></span>
+    </button>
+    <!-- Auth buttons -->
+    <button class="login-btn" id="loginBtn" data-i18n="signIn">Sign In</button>
+    <div class="user-avatar-wrap" id="userAvatarWrap" style="display:none;">
+      <button class="user-avatar-btn" id="userAvatar" aria-label="User menu">
+        <img class="user-avatar-img" id="userAvatarImg" src="" alt="User">
+      </button>
+      <div class="user-menu" id="userMenu">
+        <div class="user-menu-name" id="userDisplayName"></div>
+        <a href="profile.html" class="user-menu-item">My Profile</a>
+        <a href="curator.html" class="user-menu-item" id="curatorPanelLink" style="display:none;">Curator Panel</a>
+        <button class="user-menu-item" id="signOutBtn">Sign Out</button>
+      </div>
+    </div>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+      <span id="themeIcon">&#9789;</span>
+    </button>
+    <button class="burger-btn" id="burgerBtn" aria-label="Menu">
+      <span class="burger-line"></span>
+      <span class="burger-line"></span>
+      <span class="burger-line"></span>
+    </button>
+  </div>
+</header>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu-overlay" id="mobileMenuOverlay">
+  <div class="mobile-menu">
+    <div class="mobile-menu-header">
+      <span>Menu</span>
+      <button class="close-mobile-menu" id="closeMobileMenu">&times;</button>
+    </div>
+    <button class="mobile-menu-item" id="mobileSubmitCover">Submit a Cover</button>
+    <button class="mobile-menu-item" id="mobileFilters">Filters</button>
+    <button class="mobile-menu-item" id="mobileThemeToggle">
+      <span>Dark Mode</span>
+      <span class="mobile-theme-icon" id="mobileThemeIcon">&#9789;</span>
+    </button>
+    <button class="mobile-menu-item" id="mobileSignIn">Sign In</button>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="auth-overlay" id="authModal" role="dialog" aria-modal="true" aria-label="Sign in">
+  <div class="auth-modal">
+    <div class="auth-modal-header">
+      <h2 data-i18n="signIn">Sign In</h2>
+      <button class="close-auth-btn" id="closeAuthModal" aria-label="Close">&times;</button>
+    </div>
+    <div class="auth-modal-body">
+      <p class="auth-subtitle" data-i18n="authSubtitle">Sign in to submit covers, save favorites, and connect with other collectors.</p>
+
+      <div class="auth-email-form" id="emailLoginForm">
+        <input type="email" class="submit-input auth-input" id="authEmail" placeholder="Email">
+        <input type="password" class="submit-input auth-input" id="authPassword" placeholder="Password">
+        <div class="auth-error" id="authError"></div>
+        <button class="auth-provider-btn email-btn" id="emailSignIn">Sign In</button>
+      </div>
+
+      <div class="auth-divider"><span>or</span></div>
+
+      <button class="auth-provider-btn google-btn" id="googleSignIn">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+        <span data-i18n="continueGoogle">Continue with Google</span>
+      </button>
+      <button class="auth-provider-btn spotify-btn" id="spotifySignIn">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path d="M9 0C4.029 0 0 4.029 0 9s4.029 9 9 9 9-4.029 9-9S13.971 0 9 0zm4.14 12.975a.562.562 0 01-.773.187c-2.118-1.294-4.785-1.587-7.929-.87a.563.563 0 01-.252-1.097c3.441-.785 6.394-.447 8.767.997a.562.562 0 01.187.783zm1.104-2.45a.703.703 0 01-.967.232c-2.424-1.49-6.12-1.922-8.988-1.051a.703.703 0 11-.408-1.346c3.276-.994 7.347-.513 10.13 1.198a.703.703 0 01.233.967zm.095-2.55C11.576 6.365 6.724 6.208 3.918 7.06a.844.844 0 11-.489-1.617c3.22-.975 8.569-.787 11.952 1.338a.844.844 0 01-.842 1.462z" fill="#1DB954"/></svg>
+        <span data-i18n="continueSpotify">Continue with Spotify</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- FILTER OVERLAY (mobile/tablet) -->
+<div class="filter-overlay" id="filterOverlay" role="dialog" aria-label="Filters">
+  <div class="filter-overlay-header">
+    <h2 data-i18n="filters">Filters</h2>
+    <button class="close-filter-btn" id="closeFilters" aria-label="Close filters">&times;</button>
+  </div>
+  <div class="search-box">
+    <input type="search" class="search-input" id="mobileSearchInput" placeholder="Search" aria-label="Search covers" data-i18n-placeholder="search">
+    <button class="search-clear" id="mobileSearchClear" aria-label="Clear search">&times;</button>
+  </div>
+  <div class="active-filters" id="mobileActiveFilters"></div>
+  <div class="filter-section">
+    <span class="label" data-i18n="genre">Genre</span>
+    <ul class="filter-list" id="mobileFilterList"></ul>
+  </div>
+  <div class="filter-section">
+    <span class="label" data-i18n="decade">Decade</span>
+    <ul class="filter-list" id="mobileDecadeFilterList"></ul>
+  </div>
+  <div class="filter-section">
+    <span class="label" data-i18n="coverArtRole">Cover art role</span>
+    <ul class="filter-list" id="mobileRoleFilterList"></ul>
+  </div>
+  <div class="filter-section">
+    <span class="label">Language</span>
+    <button class="lang-toggle mobile-lang-toggle" id="mobileLangToggle" aria-label="Toggle language">EN</button>
+  </div>
+</div>
+
+<!-- SUBMIT MODAL -->
+<div class="submit-overlay" id="submitOverlay" role="dialog" aria-modal="true" aria-label="Submit a cover">
+  <div class="submit-modal">
+    <div class="submit-modal-header">
+      <h2 data-i18n="submitTitle">Submit a Cover</h2>
+      <button class="close-submit-btn" id="closeSubmitModal" aria-label="Close">&times;</button>
+    </div>
+    <div class="submit-modal-body">
+      <div class="form-group">
+        <span class="label" data-i18n="spotifyUrlLabel">Spotify Album URL or ID</span>
+        <div class="spotify-input-row">
+          <input type="text" class="submit-input" id="spotifyUrlInput" placeholder="https://open.spotify.com/album/... or album ID">
+          <button class="fetch-btn" id="fetchSpotifyBtn" data-i18n="fetch">Fetch</button>
+        </div>
+        <div class="spotify-status" id="spotifyStatus"></div>
+      </div>
+
+      <div class="form-group" id="autoFilledSection" style="display:none;">
+        <div class="autofill-preview">
+          <img id="previewThumb" src="" alt="Album artwork preview">
+          <div class="preview-info">
+            <div class="meta-value" id="previewTitle"></div>
+            <div class="meta-value sub" id="previewSubtitle"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="label" for="musicianInput" data-i18n="musicianLabel">Musician / Band</label>
+        <input type="text" class="submit-input" id="musicianInput" placeholder="e.g. Pink Floyd">
+      </div>
+
+      <div class="form-group">
+        <span class="label" data-i18n="contributors">Contributors</span>
+        <div id="contributorsList"></div>
+        <button type="button" class="add-contributor-btn" id="addContributorBtn" data-i18n="addContributor">+ Add contributor</button>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group form-group-half">
+          <label class="label" for="yearInput" data-i18n="year">Year</label>
+          <input type="number" class="submit-input" id="yearInput" placeholder="e.g. 1973" min="1900" max="2030">
+        </div>
+        <div class="form-group form-group-half">
+          <label class="label" for="labelInput" data-i18n="label">Label</label>
+          <input type="text" class="submit-input" id="labelInput" placeholder="e.g. Harvest">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="label" data-i18n="genres">Genre(s)</label>
+        <div class="genre-picker" id="genrePicker"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="label" for="curatorNoteInput" data-i18n="curatorNoteLabel">Curator Note (optional)</label>
+        <textarea class="submit-input submit-textarea" id="curatorNoteInput" placeholder="Why does this cover deserve a spot in the gallery?" rows="3" data-i18n-placeholder="curatorNotePlaceholder"></textarea>
+      </div>
+
+      <div class="submit-errors" id="submitErrors"></div>
+
+      <button class="submit-action-btn" id="submitToGithub" data-i18n="uploadCover">Upload Cover</button>
+      <p class="submit-hint" data-i18n="submitHint">Your submission will be reviewed by our curators.</p>
+      <div class="submit-success" id="submitSuccess">
+        <p data-i18n="submitSuccess">Cover submitted successfully!</p>
+        <p class="submit-hint" data-i18n="submitSuccessHint">Our curators will review your submission and add it to the gallery if approved. Thank you for contributing!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FLAG MODAL -->
+<div class="submit-overlay" id="flagOverlay" role="dialog" aria-modal="true" aria-label="Flag a mistake">
+  <div class="submit-modal">
+    <div class="submit-modal-header">
+      <h2>Flag a Mistake</h2>
+      <button class="close-submit-btn" id="closeFlagModal" aria-label="Close">&times;</button>
+    </div>
+    <div class="submit-modal-body">
+      <div class="form-group">
+        <div class="flag-cover-info" id="flagCoverInfo"></div>
+      </div>
+      <div class="form-group">
+        <label class="label" for="flagTypeSelect">Type of issue</label>
+        <select class="submit-input" id="flagTypeSelect">
+          <option value="">Select an issue...</option>
+          <option value="Wrong artist">Wrong artist</option>
+          <option value="Wrong cover artist">Wrong cover artist</option>
+          <option value="Wrong year">Wrong year</option>
+          <option value="Wrong label">Wrong label</option>
+          <option value="Wrong genre">Wrong genre</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="label" for="flagDescription">Description</label>
+        <textarea class="submit-input submit-textarea" id="flagDescription" placeholder="Describe the issue..." rows="3"></textarea>
+      </div>
+      <div class="submit-errors" id="flagErrors"></div>
+      <button class="submit-action-btn" id="submitFlagBtn">Submit Flag</button>
+      <div class="submit-success" id="flagSuccess">
+        <p>Flag submitted successfully!</p>
+        <p class="submit-hint">Thank you for helping us keep the gallery accurate. Our curators will review your flag shortly.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="main-layout" id="main-content">
+
+  <!-- LEFT COLUMN -->
+  <aside class="left-col" aria-label="Filters and introduction">
+    <p class="intro-text" data-i18n="introText">
+      Every great album begins with its cover, a portal into the sonic world within.
+      Here we celebrate the designers, illustrators, and photographers who shaped
+      how we see music.
+    </p>
+
+    <div class="search-box">
+      <input type="search" class="search-input" id="searchInput" placeholder="Search" aria-label="Search covers" data-i18n-placeholder="search">
+      <button class="search-clear" id="searchClear" aria-label="Clear search">&times;</button>
+    </div>
+
+    <div class="active-filters" id="activeFilters"></div>
+
+    <nav class="filter-section" aria-label="Genre filters">
+      <span class="label" data-i18n="genre">Genre</span>
+      <ul class="filter-list" id="filterList"></ul>
+    </nav>
+
+    <nav class="filter-section" aria-label="Decade filters">
+      <span class="label" data-i18n="decade">Decade</span>
+      <ul class="filter-list" id="decadeFilterList"></ul>
+    </nav>
+
+    <nav class="filter-section" aria-label="Role filters">
+      <span class="label" data-i18n="coverArtRole">Cover art role</span>
+      <ul class="filter-list" id="roleFilterList"></ul>
+    </nav>
+  </aside>
+
+  <!-- CENTER COLUMN -->
+  <section class="center-col" aria-label="Cover artwork gallery">
+    <div class="section-label">
+      <span class="label" data-i18n="featuredCover">Featured cover</span>
+    </div>
+
+    <div class="featured-viewer" role="img" aria-label="Featured album cover viewer">
+      <div class="vinyl-disc" id="vinylDisc" aria-hidden="true">
+        <div class="spindle"></div>
+      </div>
+      <div class="sleeve" id="sleeve">
+        <img id="featuredImg" src="" alt="" loading="eager" data-cover-id="">
+      </div>
+    </div>
+    <p class="swipe-hint sans" data-i18n="swipeHint">Swipe left/right to browse</p>
+
+    <!-- Cover grids by genre -->
+    <div id="coverGrids"></div>
+  </section>
+
+  <!-- RIGHT COLUMN -->
+  <aside class="right-col" aria-label="Album metadata">
+    <div class="meta-block">
+      <span class="label" data-i18n="album">Album</span>
+      <div class="meta-value large" id="metaTitle">&mdash;</div>
+    </div>
+    <div class="meta-block">
+      <span class="label" data-i18n="artist">Artist</span>
+      <div class="meta-value" id="metaMusician">&mdash;</div>
+    </div>
+    <div class="credit-badges" id="creditBadges">
+      <div class="credit-badge">
+        <span class="role-tag">&mdash;</span>
+        <span>&mdash;</span>
+      </div>
+    </div>
+    <div class="meta-block">
+      <span class="label" data-i18n="yearLabel">Year · Label</span>
+      <div class="meta-value mono" id="metaYearLabel">&mdash;</div>
+    </div>
+    <div class="tag-list" id="metaTags"></div>
+    <div class="curator-note" id="curatorNote">
+      Select a cover to read the curator's note.
+    </div>
+    <div class="cover-actions-row">
+      <a class="buy-vinyl-btn" id="buyVinylBtn" href="#" target="_blank" rel="noopener noreferrer"><span data-i18n="buyVinyl">Buy Vinyl</span> <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px;margin-left:4px;"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
+      <button class="save-icon-btn" id="saveCoverBtn" aria-label="Save to collection">
+        <svg class="save-icon-empty" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+        <svg class="save-icon-filled" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+      </button>
+    </div>
+    <button class="flag-mistake-btn" id="flagMistakeBtn" style="display:none;">Flag a mistake</button>
+    <div class="spotify-embed" id="spotifyEmbed"></div>
+    <div>
+      <span class="label thumb-list-title" data-i18n="moreCoversThumbs">More covers</span>
+      <div class="thumb-list" id="thumbList"></div>
+    </div>
+  </aside>
+</main>
+
+<footer class="site-footer" data-i18n="footer">
+  Sleeve — Cover art gallery concept. All artwork credited to original designers.
+</footer>
+
+<!-- Gallery App (ES Module) -->
+<script type="module" src="js/gallery.js"></script>
+
+</body>
+</html>

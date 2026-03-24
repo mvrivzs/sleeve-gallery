@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sleeve — Curator Panel</title>
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/auth.css">
+<style>
+.curator-layout {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Tabs */
+.curator-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+.curator-tab {
+  padding: 0.8rem 1.5rem;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  position: relative;
+}
+.curator-tab:hover { color: var(--text); }
+.curator-tab.active { color: var(--text); border-bottom-color: var(--text); }
+.tab-badge {
+  font-size: 0.6rem;
+  background: var(--text);
+  color: var(--bg);
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+}
+.tab-badge:empty { display: none; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Search + filters */
+.curator-toolbar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.curator-search {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: -0.01em;
+  outline: none;
+}
+.curator-search:focus { border-color: var(--accent); }
+.curator-search::placeholder { color: var(--text-faint); }
+.curator-filter-select {
+  padding: 0.6rem 2rem 0.6rem 0.8rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 0.8rem;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none' stroke='%23555' stroke-width='1.2'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+}
+
+/* Cover table */
+.cover-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.cover-table th {
+  text-align: left;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+  font-weight: 400;
+}
+.cover-table td {
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+  vertical-align: middle;
+}
+.cover-table tr:hover { background: var(--bg-alt); }
+.cover-table-img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  background: var(--bg-alt);
+}
+.cover-table-title { font-weight: 400; }
+.cover-table-artist { color: var(--text-muted); font-size: 0.8rem; }
+.cover-table-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+.table-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 0.7rem;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: background 0.15s, color 0.15s;
+}
+.table-btn:hover { background: var(--text); color: var(--bg); }
+.table-btn.danger { border-color: #c00; color: #c00; }
+.table-btn.danger:hover { background: #c00; color: #fff; }
+.status-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid;
+  border-radius: 9999px;
+}
+.status-label.approved { border-color: #2e7d32; color: #2e7d32; background: rgba(46,125,50,0.08); }
+.status-label.pending { border-color: #f9a825; color: #f9a825; background: rgba(249,168,37,0.08); }
+.status-label.rejected { border-color: #c62828; color: #c62828; background: rgba(198,40,40,0.08); }
+
+/* Pending grid (kept for pending tab) */
+.pending-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+.pending-card { border: 1px solid var(--border); background: var(--surface); }
+.pending-card-img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; border-bottom: 1px solid var(--border); }
+.pending-card-body { padding: 1rem; }
+.pending-card-title { font-size: 1rem; font-weight: 400; text-transform: uppercase; letter-spacing: -0.01em; margin-bottom: 0.2rem; }
+.pending-card-artist { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.8rem; }
+.pending-card-meta { font-size: 0.75rem; color: var(--text-faint); margin-bottom: 0.5rem; }
+.pending-card-note { font-size: 0.8rem; color: var(--text-muted); font-style: italic; margin-bottom: 1rem; line-height: 1.5; }
+.pending-card-actions { display: flex; gap: 0.8rem; }
+.approve-btn, .reject-btn {
+  flex: 1; padding: 0.6rem; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 0.8rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.08em; transition: opacity 0.2s;
+}
+.approve-btn { background: var(--text); color: var(--bg); border: 1px solid var(--border); }
+.reject-btn { background: none; color: var(--text); border: 1px solid var(--border); }
+.approve-btn:hover, .reject-btn:hover { opacity: 0.7; }
+
+.empty-state { text-align: center; padding: 4rem 1rem; color: var(--text-faint); }
+.loading-state { text-align: center; padding: 4rem 1rem; color: var(--text-faint); }
+.access-denied { text-align: center; padding: 4rem 1rem; }
+.access-denied p { color: var(--text-muted); margin-bottom: 1rem; }
+.cover-count { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+
+/* Edit modal */
+.edit-overlay {
+  display: none; position: fixed; inset: 0; background: var(--overlay-bg); z-index: 300;
+  align-items: center; justify-content: center;
+}
+.edit-overlay.open { display: flex; }
+.edit-modal {
+  background: var(--surface); border: 1px solid var(--border); width: 100%; max-width: 500px; margin: 1rem; max-height: 90vh; overflow-y: auto;
+}
+.edit-modal-header {
+  display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border);
+}
+.edit-modal-header h2 { font-size: 1rem; font-weight: 400; text-transform: uppercase; letter-spacing: 0.08em; }
+.edit-modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+.edit-field label { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); margin-bottom: 0.3rem; }
+.edit-field input, .edit-field textarea {
+  width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 0.85rem; outline: none;
+}
+.edit-field textarea { resize: vertical; min-height: 60px; }
+.edit-save-btn {
+  background: var(--text); color: var(--bg); border: 1px solid var(--border); padding: 0.7rem 1rem;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 0.8rem; cursor: pointer;
+  text-transform: uppercase; letter-spacing: 0.04em; transition: opacity 0.2s;
+}
+.edit-save-btn:hover { opacity: 0.7; }
+.close-edit-btn { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text); padding: 0; line-height: 1; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" style="font-size:0.85rem; color:var(--text-muted); text-decoration:none;">&larr; Back to Gallery</a>
+  <div class="header-actions">
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+      <span id="themeIcon">&#9789;</span>
+    </button>
+  </div>
+</header>
+
+<div class="curator-layout">
+  <div id="loadingState" class="loading-state">Loading...</div>
+  <div id="accessDenied" class="access-denied" style="display:none;">
+    <p>You need curator permissions to access this panel.</p>
+    <a href="index.html" style="color:var(--text-muted);">Return to gallery</a>
+  </div>
+
+  <div id="curatorContent" style="display:none;">
+    <h1 style="font-size:1.3rem; font-weight:400; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:2rem;">Curator Panel</h1>
+    <div class="curator-tabs">
+      <button class="curator-tab active" data-tab="pending">Pending <span class="tab-badge" id="pendingBadge"></span></button>
+      <button class="curator-tab" data-tab="flags">Flags <span class="tab-badge" id="flagsBadge"></span></button>
+      <button class="curator-tab" data-tab="all">All Covers</button>
+    </div>
+
+    <!-- PENDING TAB -->
+    <div class="tab-content active" id="tab-pending">
+      <div class="pending-grid" id="pendingGrid"></div>
+      <div class="empty-state" id="pendingEmpty" style="display:none;">No pending submissions. All caught up!</div>
+    </div>
+
+    <!-- FLAGS TAB -->
+    <div class="tab-content" id="tab-flags">
+      <div class="pending-grid" id="flagsGrid"></div>
+      <div class="empty-state" id="flagsEmpty" style="display:none;">No open flags. Everything looks good!</div>
+    </div>
+
+    <!-- ALL COVERS TAB -->
+    <div class="tab-content" id="tab-all">
+      <div class="curator-toolbar">
+        <input type="search" class="curator-search" id="curatorSearch" placeholder="Search covers...">
+        <select class="curator-filter-select" id="curatorGenreFilter">
+          <option value="">All genres</option>
+        </select>
+        <select class="curator-filter-select" id="curatorStatusFilter">
+          <option value="">All statuses</option>
+          <option value="approved">Approved</option>
+          <option value="pending">Pending</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        <button class="table-btn" id="addCoverBtn" style="padding:0.6rem 1rem; font-size:0.8rem;">+ Add Cover</button>
+      </div>
+      <div class="cover-count" id="coverCount"></div>
+      <table class="cover-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Title</th>
+            <th>Artist</th>
+            <th>Cover Artist</th>
+            <th>Year</th>
+            <th>Genre</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="coverTableBody"></tbody>
+      </table>
+      <div class="empty-state" id="allEmpty" style="display:none;">No covers found.</div>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="edit-overlay" id="deleteOverlay">
+  <div class="edit-modal" style="max-width:400px;">
+    <div class="edit-modal-header">
+      <h2>Delete Cover</h2>
+      <button class="close-edit-btn" id="closeDeleteModal">&times;</button>
+    </div>
+    <div class="edit-modal-body" style="text-align:center;">
+      <p style="font-size:0.95rem; margin-bottom:0.3rem;" id="deleteTitle"></p>
+      <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.5rem;">This action cannot be undone.</p>
+      <div style="display:flex; gap:0.8rem;">
+        <button class="edit-save-btn" id="deleteCancelBtn" style="flex:1; background:none; color:var(--text); border:1px solid var(--border);">Keep</button>
+        <button class="edit-save-btn" id="deleteConfirmBtn" style="flex:1; background:#c62828; color:#fff; border:1px solid #c62828;">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="edit-overlay" id="editOverlay">
+  <div class="edit-modal">
+    <div class="edit-modal-header">
+      <h2>Edit Cover</h2>
+      <button class="close-edit-btn" id="closeEditModal">&times;</button>
+    </div>
+    <div class="edit-modal-body">
+      <input type="hidden" id="editCoverId">
+      <div class="edit-field" id="editCoverLinkField" style="display:none;">
+        <label>Cover Link</label>
+        <a id="editCoverLink" href="#" target="_blank" style="font-size:0.8rem; color:var(--text-muted); word-break:break-all;"></a>
+      </div>
+      <div class="edit-field"><label>Spotify Album ID</label><input type="text" id="editSpotifyId" placeholder="e.g. 4LH4d3cOWNNsVw41Gqt2kv"></div>
+      <div class="edit-field"><label>Title</label><input type="text" id="editTitle"></div>
+      <div class="edit-field"><label>Musician</label><input type="text" id="editMusician"></div>
+      <div class="edit-field"><label>Cover Artist</label><input type="text" id="editCoverArtist"></div>
+      <div class="edit-field"><label>Role</label><input type="text" id="editRole"></div>
+      <div class="edit-field"><label>Year</label><input type="number" id="editYear"></div>
+      <div class="edit-field"><label>Label</label><input type="text" id="editLabel"></div>
+      <div class="edit-field"><label>Genre(s)</label><div class="genre-picker" id="editGenrePicker"></div></div>
+      <div class="edit-field"><label>Curator Note</label><textarea id="editCuratorNote" rows="3"></textarea></div>
+      <div class="edit-field"><label>Amazon Vinyl URL</label><input type="url" id="editAmazonUrl" placeholder="https://www.amazon.com/dp/..."></div>
+      <button class="edit-save-btn" id="editSaveBtn">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { supabase, isSupabaseConfigured } from './js/supabase-config.js';
+import { initAuth, onAuthChange, getUser, getProfile, isCurator } from './js/auth.js';
+import { loadPendingCovers, loadAllCovers, reviewCover, updateCover, deleteCover, loadFlags, resolveFlag } from './js/covers.js';
+import { fetchSpotifyAlbum } from './js/utils.js';
+
+// Theme
+const themeToggle = document.getElementById('themeToggle');
+const themeIcon = document.getElementById('themeIcon');
+function setTheme(dark) {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  themeIcon.innerHTML = dark ? '&#9788;' : '&#9789;';
+  localStorage.setItem('sleeve-theme', dark ? 'dark' : 'light');
+}
+themeToggle.addEventListener('click', () => setTheme(document.documentElement.getAttribute('data-theme') !== 'dark'));
+if (localStorage.getItem('sleeve-theme') === 'dark') setTheme(true);
+
+// Tabs
+document.querySelectorAll('.curator-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.curator-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+  });
+});
+
+// ========== GENRE PICKER ==========
+const AVAILABLE_GENRES = ['Rock', 'Pop', 'Hip-hop', 'R&B', 'Jazz', 'Electronic', 'Classical', 'Country', 'Folk', 'Blues', 'Metal', 'Punk', 'Indie', 'Alternative', 'Soul', 'Funk', 'Reggae', 'Latin', 'Afrobeats', 'K-pop', 'Soundtracks', 'Ambient', 'Dance'];
+
+function renderGenrePicker(containerId, selectedGenres = []) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+  AVAILABLE_GENRES.forEach(genre => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = `genre-chip${selectedGenres.includes(genre) ? ' selected' : ''}`;
+    chip.textContent = genre;
+    chip.addEventListener('click', () => chip.classList.toggle('selected'));
+    container.appendChild(chip);
+  });
+}
+
+function getGenrePickerValues(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return [];
+  return Array.from(container.querySelectorAll('.genre-chip.selected')).map(c => c.textContent);
+}
+
+// ========== STATE ==========
+let allCovers = [];
+let artworkCache = {};
+
+async function getArtwork(spotifyId) {
+  if (!spotifyId) return '';
+  if (artworkCache[spotifyId]) return artworkCache[spotifyId];
+  try {
+    const album = await fetchSpotifyAlbum(spotifyId);
+    artworkCache[spotifyId] = album.thumbnailUrl;
+    return album.thumbnailUrl;
+  } catch { return ''; }
+}
+
+// ========== PENDING TAB ==========
+async function renderPending() {
+  const grid = document.getElementById('pendingGrid');
+  grid.innerHTML = '';
+
+  const data = await loadPendingCovers();
+  document.getElementById('pendingBadge').textContent = data.length || '';
+
+  if (data.length === 0) {
+    document.getElementById('pendingEmpty').style.display = '';
+    return;
+  }
+  document.getElementById('pendingEmpty').style.display = 'none';
+
+  for (const cover of data) {
+    const spotifyId = cover.spotifyId || cover.spotify_id;
+    const artUrl = await getArtwork(spotifyId);
+    const coverArtist = cover.coverArtist || cover.cover_artist || '';
+    const artistRole = cover.role || cover.artist_role || '';
+    const genres = (cover.genre || []).join(', ');
+    const curatorNote = cover.curatorNote || cover.curator_note || '';
+
+    const card = document.createElement('div');
+    card.className = 'pending-card';
+    card.innerHTML = `
+      ${artUrl ? `<img class="pending-card-img" src="${artUrl}" alt="${cover.title}">` : ''}
+      <div class="pending-card-body">
+        <div class="pending-card-title">${cover.title}</div>
+        <div class="pending-card-artist">${cover.musician}</div>
+        <div class="pending-card-meta">${coverArtist} · ${artistRole} · ${cover.year || 'N/A'} · ${cover.label || 'N/A'}</div>
+        <div class="pending-card-meta">${genres || 'No genre'}</div>
+        ${curatorNote ? `<div class="pending-card-note">"${curatorNote}"</div>` : ''}
+        <div class="pending-card-actions">
+          <button class="approve-btn">Approve</button>
+          <button class="reject-btn">Reject</button>
+        </div>
+      </div>
+    `;
+
+    card.querySelector('.approve-btn').addEventListener('click', async () => {
+      await reviewCover(cover.id, 'approved', getUser().id);
+      card.remove();
+      const remaining = grid.children.length;
+      document.getElementById('pendingBadge').textContent = remaining || '';
+      if (remaining === 0) document.getElementById('pendingEmpty').style.display = '';
+      // Refresh all covers tab
+      allCovers = await loadAllCovers();
+      renderAllCovers();
+    });
+
+    card.querySelector('.reject-btn').addEventListener('click', async () => {
+      await reviewCover(cover.id, 'rejected', getUser().id);
+      card.remove();
+      const remaining = grid.children.length;
+      document.getElementById('pendingBadge').textContent = remaining || '';
+      if (remaining === 0) document.getElementById('pendingEmpty').style.display = '';
+      allCovers = await loadAllCovers();
+      renderAllCovers();
+    });
+
+    grid.appendChild(card);
+  }
+}
+
+// ========== FLAGS TAB ==========
+async function renderFlags() {
+  const grid = document.getElementById('flagsGrid');
+  grid.innerHTML = '';
+
+  const flags = await loadFlags();
+  document.getElementById('flagsBadge').textContent = flags.length || '';
+
+  if (flags.length === 0) {
+    document.getElementById('flagsEmpty').style.display = '';
+    return;
+  }
+  document.getElementById('flagsEmpty').style.display = 'none';
+
+  for (const flag of flags) {
+    const card = document.createElement('div');
+    card.className = 'pending-card';
+    card.innerHTML = `
+      <div class="pending-card-body">
+        <div class="pending-card-title">${flag.coverTitle}</div>
+        <div class="pending-card-artist">${flag.coverMusician}</div>
+        <div style="margin:0.6rem 0;"><span class="flag-type-label">${flag.type}</span></div>
+        <div class="pending-card-note">"${flag.description}"</div>
+        <div class="pending-card-actions">
+          <button class="approve-btn flag-edit-btn">Edit Cover</button>
+          <button class="reject-btn flag-dismiss-btn">Dismiss</button>
+        </div>
+      </div>
+    `;
+
+    card.querySelector('.flag-edit-btn').addEventListener('click', () => {
+      // Find the cover in allCovers and open edit modal
+      const cover = allCovers.find(c => c.id === flag.coverId);
+      if (cover) {
+        openEditModal(cover);
+      } else {
+        alert('Cover not found. It may have been deleted.');
+      }
+    });
+
+    card.querySelector('.flag-dismiss-btn').addEventListener('click', async () => {
+      await resolveFlag(flag.id);
+      card.remove();
+      const remaining = grid.children.length;
+      document.getElementById('flagsBadge').textContent = remaining || '';
+      if (remaining === 0) document.getElementById('flagsEmpty').style.display = '';
+    });
+
+    grid.appendChild(card);
+  }
+}
+
+// ========== ALL COVERS TAB ==========
+function getFilteredCovers() {
+  const search = document.getElementById('curatorSearch').value.toLowerCase();
+  const genre = document.getElementById('curatorGenreFilter').value;
+  const status = document.getElementById('curatorStatusFilter').value;
+
+  return allCovers.filter(c => {
+    const title = (c.title || '').toLowerCase();
+    const musician = (c.musician || '').toLowerCase();
+    const coverArtist = (c.coverArtist || c.cover_artist || '').toLowerCase();
+    const matchSearch = !search || title.includes(search) || musician.includes(search) || coverArtist.includes(search);
+    const matchGenre = !genre || (c.genre || []).includes(genre);
+    const coverStatus = c.status || 'approved';
+    const matchStatus = !status || coverStatus === status;
+    return matchSearch && matchGenre && matchStatus;
+  });
+}
+
+function renderAllCovers() {
+  const tbody = document.getElementById('coverTableBody');
+  tbody.innerHTML = '';
+
+  // Populate genre filter
+  const genreSelect = document.getElementById('curatorGenreFilter');
+  const currentGenre = genreSelect.value;
+  const allGenres = [...new Set(allCovers.flatMap(c => c.genre || []))].sort();
+  genreSelect.innerHTML = '<option value="">All genres</option>' +
+    allGenres.map(g => `<option value="${g}" ${g === currentGenre ? 'selected' : ''}>${g}</option>`).join('');
+
+  const filtered = getFilteredCovers();
+  document.getElementById('coverCount').textContent = `${filtered.length} cover${filtered.length !== 1 ? 's' : ''}`;
+
+  if (filtered.length === 0) {
+    document.getElementById('allEmpty').style.display = '';
+    return;
+  }
+  document.getElementById('allEmpty').style.display = 'none';
+
+  filtered.forEach(cover => {
+    const tr = document.createElement('tr');
+    const spotifyId = cover.spotifyId || cover.spotify_id || '';
+    const coverArtist = cover.coverArtist || cover.cover_artist || '';
+    const genres = (cover.genre || []).join(', ');
+    const coverStatus = cover.status || 'approved';
+    tr.innerHTML = `
+      <td><div class="cover-table-img" data-spotify="${spotifyId}" style="background:var(--bg-alt);"></div></td>
+      <td><a class="cover-table-title" href="index.html?cover=${cover.id}" target="_blank" style="color:var(--text); text-decoration:none;">${cover.title}</a></td>
+      <td><span class="cover-table-artist">${cover.musician}</span></td>
+      <td><span class="cover-table-artist">${coverArtist}</span></td>
+      <td>${cover.year || ''}</td>
+      <td><span class="cover-table-artist">${genres}</span></td>
+      <td><span class="status-label ${coverStatus}">${coverStatus}</span></td>
+      <td>
+        <div class="cover-table-actions">
+          <button class="table-btn edit-btn">Edit</button>
+          <button class="table-btn danger delete-btn">Delete</button>
+        </div>
+      </td>
+    `;
+
+    // Load artwork async
+    if (spotifyId) {
+      getArtwork(spotifyId).then(url => {
+        if (url) {
+          const imgDiv = tr.querySelector('.cover-table-img');
+          imgDiv.style.backgroundImage = `url(${url})`;
+          imgDiv.style.backgroundSize = 'cover';
+        }
+      });
+    }
+
+    tr.querySelector('.edit-btn').addEventListener('click', () => openEditModal(cover));
+
+    tr.querySelector('.delete-btn').addEventListener('click', () => {
+      openDeleteModal(cover);
+    });
+
+    tbody.appendChild(tr);
+  });
+}
+
+// Search + filter listeners
+let searchDebounce;
+document.getElementById('curatorSearch').addEventListener('input', () => {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(renderAllCovers, 200);
+});
+document.getElementById('curatorGenreFilter').addEventListener('change', renderAllCovers);
+document.getElementById('curatorStatusFilter').addEventListener('change', renderAllCovers);
+
+// ========== EDIT MODAL ==========
+let editingCover = null;
+let isAddMode = false;
+
+function openEditModal(cover) {
+  isAddMode = false;
+  editingCover = cover;
+  document.querySelector('.edit-modal-header h2').textContent = 'EDIT COVER';
+  document.getElementById('editSaveBtn').textContent = 'Save Changes';
+  document.getElementById('editCoverId').value = cover.id;
+  document.getElementById('editTitle').value = cover.title || '';
+  document.getElementById('editMusician').value = cover.musician || '';
+  document.getElementById('editCoverArtist').value = cover.coverArtist || cover.cover_artist || '';
+  document.getElementById('editRole').value = cover.role || cover.artist_role || '';
+  document.getElementById('editYear').value = cover.year || '';
+  document.getElementById('editLabel').value = cover.label || '';
+  renderGenrePicker('editGenrePicker', cover.genre || []);
+  document.getElementById('editCuratorNote').value = cover.curatorNote || cover.curator_note || '';
+  document.getElementById('editSpotifyId').value = cover.spotifyId || cover.spotify_id || '';
+  const amazonFallback = `https://www.amazon.com/s?k=${encodeURIComponent(`${cover.musician} ${cover.title} vinyl`)}`;
+  document.getElementById('editAmazonUrl').value = cover.amazonUrl || amazonFallback;
+  const coverUrl = `${window.location.origin}/index.html?cover=${cover.id}`;
+  document.getElementById('editCoverLink').href = coverUrl;
+  document.getElementById('editCoverLink').textContent = coverUrl;
+  document.getElementById('editCoverLinkField').style.display = '';
+  document.getElementById('editOverlay').classList.add('open');
+}
+
+function openAddModal() {
+  isAddMode = true;
+  editingCover = null;
+  document.querySelector('.edit-modal-header h2').textContent = 'ADD COVER';
+  document.getElementById('editSaveBtn').textContent = 'Add Cover';
+  document.getElementById('editCoverId').value = '';
+  document.getElementById('editTitle').value = '';
+  document.getElementById('editMusician').value = '';
+  document.getElementById('editCoverArtist').value = '';
+  document.getElementById('editRole').value = '';
+  document.getElementById('editYear').value = '';
+  document.getElementById('editLabel').value = '';
+  renderGenrePicker('editGenrePicker', []);
+  document.getElementById('editCuratorNote').value = '';
+  document.getElementById('editSpotifyId').value = '';
+  document.getElementById('editAmazonUrl').value = '';
+  document.getElementById('editCoverLinkField').style.display = 'none';
+  document.getElementById('editOverlay').classList.add('open');
+}
+
+document.getElementById('closeEditModal').addEventListener('click', () => {
+  document.getElementById('editOverlay').classList.remove('open');
+});
+document.getElementById('editOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) document.getElementById('editOverlay').classList.remove('open');
+});
+
+document.getElementById('editSaveBtn').addEventListener('click', async () => {
+  const coverData = {
+    title: document.getElementById('editTitle').value.trim(),
+    musician: document.getElementById('editMusician').value.trim(),
+    coverArtist: document.getElementById('editCoverArtist').value.trim(),
+    role: document.getElementById('editRole').value.trim(),
+    year: parseInt(document.getElementById('editYear').value) || null,
+    label: document.getElementById('editLabel').value.trim(),
+    genre: getGenrePickerValues('editGenrePicker'),
+    curatorNote: document.getElementById('editCuratorNote').value.trim(),
+    spotifyId: document.getElementById('editSpotifyId').value.trim(),
+    amazonUrl: document.getElementById('editAmazonUrl').value.trim()
+  };
+
+  if (!coverData.title || !coverData.musician) {
+    alert('Title and Musician are required.');
+    return;
+  }
+
+  if (isAddMode) {
+    // Add new cover as approved (curator adding directly)
+    coverData.status = 'approved';
+    coverData.submittedBy = getUser().id;
+    const { submitCover } = await import('./js/covers.js');
+    // For curator direct add, we submit then immediately approve
+    if (!isSupabaseConfigured()) {
+      const mockCovers = JSON.parse(localStorage.getItem('sleeve-mock-covers') || '[]');
+      const maxId = Math.max(...[...allCovers, ...mockCovers].map(c => c.id || 0), 0);
+      coverData.id = maxId + 1;
+      coverData.hue = 0;
+      coverData.sat = 0;
+      coverData.lit = 25;
+      mockCovers.push(coverData);
+      localStorage.setItem('sleeve-mock-covers', JSON.stringify(mockCovers));
+    } else {
+      await submitCover(coverData);
+    }
+  } else {
+    await updateCover(editingCover.id, coverData);
+  }
+
+  document.getElementById('editOverlay').classList.remove('open');
+  allCovers = await loadAllCovers();
+  renderAllCovers();
+});
+
+// Add Cover button
+document.getElementById('addCoverBtn').addEventListener('click', openAddModal);
+
+// ========== DELETE MODAL ==========
+let deletingCover = null;
+
+function openDeleteModal(cover) {
+  deletingCover = cover;
+  document.getElementById('deleteTitle').textContent = `"${cover.title}" by ${cover.musician}`;
+  document.getElementById('deleteOverlay').classList.add('open');
+}
+
+document.getElementById('closeDeleteModal').addEventListener('click', () => {
+  document.getElementById('deleteOverlay').classList.remove('open');
+});
+document.getElementById('deleteOverlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) document.getElementById('deleteOverlay').classList.remove('open');
+});
+document.getElementById('deleteCancelBtn').addEventListener('click', () => {
+  document.getElementById('deleteOverlay').classList.remove('open');
+});
+document.getElementById('deleteConfirmBtn').addEventListener('click', async () => {
+  if (!deletingCover) return;
+  await deleteCover(deletingCover.id);
+  document.getElementById('deleteOverlay').classList.remove('open');
+  allCovers = await loadAllCovers();
+  renderAllCovers();
+});
+
+// ========== INIT ==========
+await initAuth();
+
+onAuthChange(async (user, profile) => {
+  document.getElementById('loadingState').style.display = 'none';
+
+  if (!user || !isCurator()) {
+    document.getElementById('accessDenied').style.display = '';
+    document.getElementById('curatorContent').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('accessDenied').style.display = 'none';
+  document.getElementById('curatorContent').style.display = '';
+
+  // Load data
+  allCovers = await loadAllCovers();
+  await renderPending();
+  await renderFlags();
+  renderAllCovers();
+});
+</script>
+
+</body>
+</html>
