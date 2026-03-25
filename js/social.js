@@ -7,7 +7,7 @@ const MOCK_SAVES_KEY = 'sleeve-mock-saves';
 
 function getMockSaves() {
   try { return JSON.parse(localStorage.getItem(MOCK_SAVES_KEY) || '[]'); }
-  catch { return []; }
+  catch(e) { return []; }
 }
 
 function saveMockSaves(ids) {

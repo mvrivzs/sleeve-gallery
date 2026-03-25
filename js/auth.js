@@ -1,8 +1,8 @@
 // Authentication module — Google + Spotify OAuth via Supabase
 import { supabase, isSupabaseConfigured } from './supabase-config.js';
 
-let currentUser = null;
-let currentProfile = null;
+let currentUser = undefined;
+let currentProfile = undefined;
 const authListeners = [];
 
 // ========== MOCK USERS (dev/test mode) ==========
@@ -188,26 +188,34 @@ export async function initAuth() {
     return;
   }
 
-  // Listen for auth state changes
-  supabase.auth.onAuthStateChange(async (event, session) => {
+  // First check for existing session
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
       currentUser = session.user;
       currentProfile = await fetchProfile(session.user.id);
-      notifyListeners();
     } else {
       currentUser = null;
       currentProfile = null;
-      notifyListeners();
     }
-  });
-
-  // Check existing session
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session?.user) {
-    currentUser = session.user;
-    currentProfile = await fetchProfile(session.user.id);
     notifyListeners();
-  } else {
+  } catch (e) {
+    console.warn('Auth init failed:', e.message);
+    currentUser = null;
+    currentProfile = null;
     notifyListeners();
   }
+
+  // Then listen for future auth state changes (sign in/out)
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'INITIAL_SESSION') return; // Already handled above
+    if (session?.user) {
+      currentUser = session.user;
+      currentProfile = await fetchProfile(session.user.id);
+    } else {
+      currentUser = null;
+      currentProfile = null;
+    }
+    notifyListeners();
+  });
 }

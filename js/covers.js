@@ -53,7 +53,7 @@ const MOCK_STORAGE_KEY = 'sleeve-mock-covers';
 function getMockCovers() {
   try {
     return JSON.parse(localStorage.getItem(MOCK_STORAGE_KEY) || '[]');
-  } catch { return []; }
+  } catch(e) { return []; }
 }
 
 function saveMockCovers(covers) {
@@ -229,7 +229,7 @@ const FLAG_STORAGE_KEY = 'sleeve-mock-flags';
 function getMockFlags() {
   try {
     return JSON.parse(localStorage.getItem(FLAG_STORAGE_KEY) || '[]');
-  } catch { return []; }
+  } catch(e) { return []; }
 }
 
 function saveMockFlags(flags) {
